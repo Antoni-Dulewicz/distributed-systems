@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smog Tracker</title>
+    <link rel="icon" type="image/png" href="images/eco.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <h2 class="text-center mb-4">Wybierz wskaźnik i miasto</h2>
+    <form class="card p-4 shadow" onsubmit="handleSubmit(event)">
+        <div class="mb-3">
+            <label for="city" class="form-label">Miasto:</label>
+            <input type="text" id="city" name="city" class="form-control" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="options" class="form-label">Wskaźnik:</label>
+            <select id="options" name="options" class="form-select" required>
+                <option value="wszystkie">Wszystkie</option>
+                <option value="dwutlenek siarki">Dwutlenek siarki (S02)</option>
+                <option value="ozon">Ozon (O3)</option>
+                <option value="dwutlenek azotu">Dwutlenek azotu (NO2)</option>
+                <option value="tlenki azotu">Tlenki azotu (NOx)</option>
+                <option value="tlenek wegla">Tlenki węgla (CO)</option>
+                <option value="benzen">Benzen (C6H6)</option>
+                <option value="tlenek azotu">Tlenek azotu (NO)</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary w-100">Zatwierdź</button>
+    </form>
+
+    <div class="modal fade" id="responseModal" tabindex="-1" aria-labelledby="responseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="responseModalLabel">Dane</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="responseContent">
+                    <!---->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zamknij</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingMessage" class="text-center mt-5" style="display: none;">
+        <div class="spinner-border" role="status"></div>
+        <p>Pobieranie danych...</p>
+    </div>
+
+    <script>
+        function handleSubmit(event) {
+            event.preventDefault();
+            var city = document.getElementById('city').value;
+            var options = document.getElementById('options').value;
+            var responseContent = document.getElementById('responseContent');
+
+            loadingMessage.style.display = 'block';
+
+            var url = options === 'wszystkie' ? `http://localhost:8000/get-all-values?city=${city}` : `http://localhost:8000/mean-value?city=${city}&sensor_type=${options}`;
+
+            fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                })
+                    .then(async (response) => {
+                        loadingMessage.style.display = 'none';
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.detail);
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {                    
+
+                        let data_text = '';
+
+                        if (options === 'wszystkie') {
+                            data_text = `Miasto: ${data[0].Miasto}, Godzina: ${data[data.length - 1].godzina_pomiaru}\nTemperatura: ${data[data.length - 1].temperatura}\n\n`;
+
+                            for (let i = 0; i < data.length - 1; i++) {
+                                data_text += `Wskaźnik: ${data[i].Wskaźnik}\nŚrednia wartość: ${data[i].Średnia === "BRAK DANYCH" ? "Brak danych" : data[i].Średnia + " μg/m3"}\n\n`;
+                            }
+                        } else {
+                            data_text = `Miasto: ${data.Miasto}\nWskaźnik: ${data.Wskaźnik}\nŚrednia wartość: ${data.Średnia === "BRAK DANYCH" ? "Brak danych" : data.Średnia} μg/m3\n\n`;
+                        }
+
+                        responseContent.innerText = data_text;
+                        loadingMessage.style.display = 'none';
+
+                    })
+                    .catch((error) => {
+                        responseContent.innerHTML = `<div class="text-center"><p class="text-danger">${error.message}</p></div>`;
+                        loadingMessage.style.display = 'none';
+                    })
+                    .finally(() => {
+                        var modal = new bootstrap.Modal(document.getElementById('responseModal'));
+                        modal.show();   
+                    });
+
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
