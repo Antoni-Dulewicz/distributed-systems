@@ -1,0 +1,1 @@
+python -m grpc_tools.protoc  -Iproto  --python_out=client-python  --grpc_python_out=client-python proto/*.proto
