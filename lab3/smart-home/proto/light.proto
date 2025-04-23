@@ -1,0 +1,58 @@
+syntax="proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+
+enum LightType {
+  NORMAL = 0;
+  RGB = 1;
+  DIMMABLE = 2;
+}
+
+message LightInfo {
+  string id = 1;
+  DeviceType d_type = 2;
+  bool is_on = 3;
+  LightType type = 4;
+  optional string color = 5;
+  optional double brightness = 6;
+}
+
+message LightList{
+  repeated LightInfo devices = 1;
+}
+
+
+message TurnOnRequest {
+  string id = 1;
+}
+
+message TurnOffRequest {
+  string id = 1;
+}
+
+message SetColorRequest {
+  string id = 1;
+  string color = 2;
+}
+
+message SetBrightnessRequest {
+  string id = 1;
+  double brightness = 2;
+}
+
+message LightResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+service Light {
+  rpc TurnOn(TurnOnRequest) returns (LightResponse);
+  rpc TurnOff(TurnOffRequest) returns (LightResponse);
+  rpc GetLightInfo(DeviceRequest) returns (LightInfo);
+  rpc ListLights(google.protobuf.Empty) returns (LightList);
+  rpc SetColor(SetColorRequest) returns (LightResponse);
+  rpc SetBrightness(SetBrightnessRequest) returns (LightResponse);
+}

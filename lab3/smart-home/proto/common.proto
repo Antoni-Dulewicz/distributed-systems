@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proto;
+
+enum DeviceType {
+  REFRIGERATOR = 0;
+  LIGHT = 1;
+  THERMOMETER = 2;
+}
+
+message DeviceRequest {
+  string id = 1;
+}

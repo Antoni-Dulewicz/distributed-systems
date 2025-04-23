@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+
+
+message TempInfo {
+  string id = 1;
+  DeviceType d_type = 2;
+  double temperature = 3;
+}
+
+message TempList {
+  repeated TempInfo devices = 1;
+}
+
+service Temperature {
+  rpc ListDevices(google.protobuf.Empty) returns (TempList);
+  rpc GetTemperature(DeviceRequest) returns (TempInfo);
+}

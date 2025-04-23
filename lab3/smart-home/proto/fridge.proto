@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+import "common.proto";
+
+enum FridgeType {
+  NO_FREEZER = 0;
+  WITH_FREEZER = 1;
+}
+
+message FridgeInfo {
+  string id = 1;
+  DeviceType d_type = 2;
+  double temperature = 3;
+  bool door_closed = 4;
+  FridgeType type = 5;
+  optional double freezer_temperature = 6;
+}
+
+message FridgeList {
+  repeated FridgeInfo devices = 1;
+}
+
+message SetTemperatureRequest {
+  string id = 1;
+  double temperature = 2;
+  optional double freezer_temperature = 3;
+}
+message SetTemperatureResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+service Fridge {
+  rpc ListFridges(google.protobuf.Empty) returns (FridgeList);
+  rpc SetTemperature(SetTemperatureRequest) returns (SetTemperatureResponse);
+  rpc GetFridgeInfo(DeviceRequest) returns (FridgeInfo);
+}
