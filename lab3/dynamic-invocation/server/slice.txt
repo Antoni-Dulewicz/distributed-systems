@@ -1,0 +1,1 @@
+slice2py --output-dir . slice/calculator.ice
