@@ -90,14 +90,15 @@ def watch_node_recursively(node: WatchNode):
 
     watched_paths.add(node.path)
 
-    @zk.DataWatch(node.path)
-    def data_watch(data, stat, event):
-        if event is not None:
-            print(f"Node {node.path} {str(event.type).lower()}")
-            if event.type == EventType.DELETED:
-                watched_paths.discard(node.path)
-                print_descendants_count()
-                return False
+    if node.path != '/a':
+        @zk.DataWatch(node.path)
+        def data_watch(data, stat, event):
+            if event is not None:
+                print(f"Node {node.path} {str(event.type).lower()}")
+                if event.type == EventType.DELETED:
+                    watched_paths.discard(node.path)
+                    print_descendants_count()
+                    return False
 
     @zk.ChildrenWatch(node.path)
     def children_watch(children):
